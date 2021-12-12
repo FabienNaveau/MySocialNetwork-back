@@ -83,7 +83,7 @@ module.exports.login = async (req, res) => {
         }
         // Users in data base have crypted passwords so we have ton compare them to be sure that the crypted password correspond to the user password in the login form
         const checkingPassword = await compare(password, user.password)
-        console.log("checking password : ", checkingPassword)
+    
         // if compared password's good, we send user infos to the front application and create an unique token for the user
         if (checkingPassword) {
             // we delete user's password for not send it to client
@@ -95,11 +95,13 @@ module.exports.login = async (req, res) => {
                 firstname: user.firstname,
                 lastname: user.lastname,
                 role: user.role,
-            })
+            });
+            
             
             // we send infos to the front application
+            res.cookie("accessToken", accessToken);
             res.json({
-                accessToken
+                user
             })
         } else {
             return res.json({
