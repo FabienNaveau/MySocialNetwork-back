@@ -1,7 +1,8 @@
 const User = require("../models/User");
 const { hashSync, compare } = require("bcrypt")
 const passwordSchema = require("../models/password");
-const { validate } = require("email-validator")
+const { validate } = require("email-validator");
+const auth = require("../middlewares/authMiddleware")
 
 module.exports.signup = async (req, res) => {
     
@@ -60,4 +61,53 @@ module.exports.signup = async (req, res) => {
             res.status(500)
 
         }
+}
+
+module.exports.login = async (req, res) => {
+    try {
+        const { email, password } = req.body
+        if (!email || !password) return res.json({
+            error: "Veuillez renseigner tous les champs"
+        })
+
+        const user = await User.findOne({email : email.toLowerCase()});
+        
+        // if there's no match user in database we return an error  
+
+        if (!user) {
+
+            res.json({
+                error: 'Utilisateur inconnu'
+            });
+            throw new Error("L'utilisateur est déjà en base de données");
+        }
+        // Users in data base have crypted passwords so we have ton compare them to be sure that the crypted password correspond to the user password in the login form
+        const checkingPassword = await compare(password, user.password)
+        console.log("checking password : ", checkingPassword)
+        // if compared password's good, we send user infos to the front application and create an unique token for the user
+        if (checkingPassword) {
+            // we delete user's password for not send it to client
+            delete user.password
+            
+            const accessToken = auth.generateAccessToken({
+                email: user.email,
+                pseudo: user.pseudo,
+                firstname: user.firstname,
+                lastname: user.lastname,
+                role: user.role,
+            })
+            
+            // we send infos to the front application
+            res.json({
+                accessToken
+            })
+        } else {
+            return res.json({
+                error: 'Mot de passe invalide.'
+            })
+        }
+    } catch (error) {
+        console.log(error)
+        res.status(500);
+    }
 }
