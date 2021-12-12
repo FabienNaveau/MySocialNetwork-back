@@ -113,3 +113,12 @@ module.exports.login = async (req, res) => {
         res.status(500);
     }
 }
+
+module.exports.logout = (req, res) => {
+    if(!req.cookies.accessToken) {
+        return;
+    } else {
+        res.clearCookie("accessToken");
+        res.json({message: "Vous avez bien été déconnecté(e)"})
+    }
+}
