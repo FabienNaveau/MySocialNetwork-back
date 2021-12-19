@@ -90,6 +90,7 @@ module.exports.login = async (req, res) => {
             delete user.password
             
             const accessToken = auth.generateAccessToken({
+                id: user.id,
                 email: user.email,
                 pseudo: user.pseudo,
                 firstname: user.firstname,
@@ -120,5 +121,28 @@ module.exports.logout = (req, res) => {
     } else {
         res.clearCookie("accessToken");
         res.json({message: "Vous avez bien été déconnecté(e)"})
+    }
+}
+
+module.exports.userProfile = async (req, res) => {
+    const userId = req.user.id
+    try {
+        const user = await User.findOne({
+            _id: userId
+        })
+        if(!user) throw Error("Personne ne correspond en base de données")
+        delete user.password
+        res.json({
+            user: {
+                pseudo: user.pseudo,
+                email: user.email,
+                firstname: user.firstname, 
+                lastname: user.lastname,
+                followers: user.followers.length,
+                following: user.following.length
+            }
+        })
+    } catch (error) {
+        console.error(error)
     }
 }
