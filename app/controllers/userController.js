@@ -99,9 +99,9 @@ module.exports.login = async (req, res) => {
             
             
             // we send infos to the front application
-            res.cookie("accessToken", accessToken);
+            
             res.json({
-                user
+                accessToken
             })
         } else {
             return res.json({
