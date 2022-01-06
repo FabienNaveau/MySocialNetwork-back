@@ -143,6 +143,21 @@ module.exports.userProfile = async (req, res) => {
             }
         })
     } catch (error) {
-        console.error(error)
+        res.status(500)
     }
+}
+
+module.exports.uploadAvatar = async (req, res) => {
+    try {
+        console.log(req.file)
+        if(req.file.size > 5000000) {
+            res.json({erreur: "La taille de l'image doit être inférieure à 5 Mo"})
+            return
+        }
+        await User.updateOne({pseudo: req.user.pseudo}, {$set: {picture: req.file.filename}})
+        res.json({message: "Votre image a bien été modifiée"})
+    } catch(error) {
+        res.status(500)
+    }
+    
 }
